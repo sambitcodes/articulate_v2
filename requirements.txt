@@ -1,0 +1,10 @@
+streamlit>=1.26.0
+langchain==1.0.7
+langchain-core>=0.1.15
+langchain-community>=0.0.20
+langchain-groq>=1.0.1
+python-dotenv
+requests
+PyPDF2
+python-docx
+markdown
