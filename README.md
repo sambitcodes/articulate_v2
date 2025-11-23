@@ -2,7 +2,25 @@
 
 An advanced Streamlit-based web application that leverages LangChain and Groq API to provide comprehensive career development assistance across four specialized domains.
 
+---
+
 ## 🌟 Features Overview
+
+### **NEW: User Authentication & Profiles**
+- **User registration and login** for personalized and secure access.
+- **Profile page** with support for avatar upload, user information view/edit.
+- **Secure logout** to end sessions and protect privacy.
+- All features available ONLY after secure authentication.
+
+### **NEW: Chat Library System**
+- Gemini/ChatGPT-like **chat history library** in every tab (right UI column).
+- **Browse last 10 sessions** of chats for each feature tab (per user!).
+- **Click any previous chat** to view the entire conversation and continue from where you left off.
+- **Start new chat** for a fresh session—automatically saves the current session/history.
+- **Delete chat** from library to manage your history.
+- Ensures seamless multi-tasking and recall—never lose context again!
+
+---
 
 ### 📄 Tab 1: CV Analysis & Interview Preparation
 - **Upload and analyze** your CV/Resume (PDF, DOCX, or TXT)
@@ -59,6 +77,8 @@ An advanced Streamlit-based web application that leverages LangChain and Groq AP
 - Llama 3.3 70B 
 - Kimi K2 Instruct
 
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -101,29 +121,43 @@ streamlit run app.py
 
 The app will open at `http://localhost:8501`
 
+---
+
 ## 📁 Project Structure
 
 ```
 articulAIte/
-├── app.py                          # Main Streamlit application entry point
-├── config.py                       # Configuration, models, and constants
-├── requirements.txt                # Python dependencies
-├── .env.example                    # Example environment file
-├── .gitignore                      # Git ignore patterns
-├── README.md                       # This file
+├── app.py                    # Main Streamlit application entry point
+├── config.py                 # Configuration, models, and constants
+├── requirements.txt          # Python dependencies
+├── .env.example              # Example environment file
+├── .gitignore                # Git ignore patterns
+├── README.md                 # This file
 │
-├── utils/                          # Utility functions
-│   ├── __init__.py                # Package initializer
-│   ├── file_handler.py            # PDF/DOCX/TXT file processing
-│   └── chat_history.py            # Chat history management
+├── utils/                    # Utility functions
+│   ├── __init__.py
+│   ├── file_handler.py       # PDF/DOCX/TXT file processing
+│   └── session_manager.py    # Enhanced session management with chat library
 │
-└── tabs/                           # Tab implementations
-    ├── __init__.py                # Package initializer
-    ├── cv_interview.py            # CV Analysis & Interview Prep tab
-    ├── code_explainer.py          # Code Explainer & Problem Solver tab
-    ├── article_generator.py       # Article Generator tab
-    └── study_plan.py              # Study Plan Generator tab
+├── auth/                     # Authentication and user profile logic
+│   ├── database.py           # User (and session) database backend
+│   ├── auth_ui.py            # Login, Register, Logout UI
+│   └── profile_ui.py         # Profile page logic
+│
+├── components/               # UI components such as Chat Library sidebar
+│   └── chat_sidebar.py       # Chat Library sidebar component
+│
+├── chat_utils.py             # Chat history database operations
+│
+└── tabs/                     # Tab implementations
+    ├── __init__.py
+    ├── cv_interview.py
+    ├── code_explainer.py
+    ├── article_generator.py
+    └── study_plan.py
 ```
+
+---
 
 ## 🔒 Security & Deployment
 
@@ -163,14 +197,33 @@ git push origin main
 - **Cloud**: Use Streamlit Cloud Secrets management
 - **Never**: Commit API keys to version control
 
+---
+
 ## 💬 Chat System
 
-Each tab features a **persistent chat system** that:
-- ✅ Maintains conversation history during session
-- ✅ Provides context-aware responses
-- ✅ Allows follow-up questions on generated content
-- ✅ Supports natural conversation flow
-- ✅ Respects user privacy (no external storage)
+Each tab features an advanced **multi-session chat system**:
+
+- ✅ Maintains conversation history and context per tab, per user session.
+- ✅ **Chat Library**: View last 10 sessions for each tab; recall entire conversations at a click.
+- ✅ **Continue any session from where you left off**—perfect for deep research or interview prep.
+- ✅ **Start new chat sessions** while preserving history for future access.
+- ✅ Delete unwanted sessions for privacy.
+- ✅ Supports persona-based follow-up (interviewer, mentor, code assistant, etc).
+- ✅ All previous chats shown in the right sidebar, just like Gemini/ChatGPT/Perplexity.
+- ✅ Session continuity, context rehydration, and robust storage—work on multiple tasks in parallel!
+
+---
+
+## 👤 Authentication & User Profile
+
+**User Account Features:**
+- **Sign up / Register** with username, email, and password.
+- **Log in** to access all app features (secure session, supports multiple users).
+- **Logout** securely closes all sessions and clears sensitive data.
+- **Profile page** to view and update user information, upload profile photo, and manage settings.
+- Only authenticated users can interact with features or store chat sessions.
+
+---
 
 ## 🎯 Usage Examples
 
@@ -183,6 +236,7 @@ Each tab features a **persistent chat system** that:
    - Get advice on particular experiences
    - Learn how to present your skills
    - Discuss company culture fit
+5. **Access previous discussions using the Chat Library!**
 
 ### Example 2: Code Explainer Tab
 1. Paste Python, JavaScript, Java, or other code
@@ -192,6 +246,7 @@ Each tab features a **persistent chat system** that:
    - Algorithm complexity
    - Best practices
    - Alternative implementations
+4. **Browse and continue past code chats via Chat Library sidebar.**
 
 ### Example 3: Article Generator Tab
 1. Enter topic (e.g., "Machine Learning in Healthcare")
@@ -203,6 +258,7 @@ Each tab features a **persistent chat system** that:
    - Change the tone
    - Add more examples
    - Refine content
+6. **Easily recall or resume writing sessions via Chat Library!**
 
 ### Example 4: Study Plan Tab
 1. Enter subject (e.g., "Data Structures & Algorithms")
@@ -214,6 +270,9 @@ Each tab features a **persistent chat system** that:
    - Get resource recommendations
    - Clarify difficult topics
    - Customize for your goals
+6. **Review or continue earlier study chats as needed.**
+
+---
 
 ## ⚙️ Configuration
 
@@ -232,28 +291,33 @@ ALLOWED_FILE_TYPES = ["pdf", "docx", "txt"]
 
 ### Chat Settings
 ```python
-CHAT_MAX_HISTORY = 50  # Maximum messages in history
+CHAT_MAX_HISTORY = 50        # Maximum messages in history
 CHAT_MESSAGE_MAX_LENGTH = 4000  # Max message length
+CHAT_LIBRARY_MAX_SESSIONS = 10  # Last 10 chat sessions per tab/user shown
 ```
+
+---
 
 ## 🛠️ API Configuration
 
 ### Groq API Models
 The app uses the following Groq models:
 
-| Model | Use Case | Speed | Quality |
-|-------|----------|-------|---------|
-| Groq Compound | Web search + code | ⚡ | ⭐⭐⭐⭐⭐ |
-| Groq Compound Mini | Latency-optimized | ⚡⚡ | ⭐⭐⭐⭐⭐ |
-| Llama 3.3 70B | Advanced reasoning | ⚡⚡ | ⭐⭐⭐⭐ |
-| Llama 4 Maverick 17B | Complex reasoning | ⚡⚡ | ⭐⭐⭐⭐ |
-| GPT-OSS-120B | Complex tasks | ⚡ | ⭐⭐⭐⭐ |
-| Kimi K2 Instruct | Natural language | ⚡ | ⭐⭐⭐⭐⭐ |
+| Model                 | Use Case                      | Speed | Quality    |
+|-----------------------|-------------------------------|-------|------------|
+| Groq Compound         | Web search + code             | ⚡    | ⭐⭐⭐⭐⭐    |
+| Groq Compound Mini    | Latency-optimized             | ⚡⚡   | ⭐⭐⭐⭐⭐    |
+| Llama 3.3 70B         | Advanced reasoning            | ⚡⚡   | ⭐⭐⭐⭐     |
+| Llama 4 Maverick 17B  | Complex reasoning             | ⚡⚡   | ⭐⭐⭐⭐     |
+| GPT-OSS-120B          | Complex tasks                 | ⚡    | ⭐⭐⭐⭐     |
+| Kimi K2 Instruct      | Natural language              | ⚡    | ⭐⭐⭐⭐⭐    |
 
 ### Rate Limiting
 - Standard Groq API rate limits apply
 - Exponential backoff for retries
 - Graceful error messages
+
+---
 
 ## 🐛 Troubleshooting
 
@@ -276,19 +340,22 @@ The app uses the following Groq models:
 - Ensure file is not corrupted
 - Try re-uploading
 
-### Chat not working
+### Chat library/history not working
 **Solution:**
-- Refresh the page
-- Clear browser cache
-- Check Streamlit version
-- Verify API key permissions
+- Ensure login status is valid
+- Refresh the app if sidebar does not update
+- Try logging out and back in
+
+---
 
 ## 📊 Performance Considerations
 
 - **Streaming responses**: Long responses stream for better UX
 - **Caching**: Streamlit caches expensive operations
-- **Session state**: Efficient session management
+- **Session state**: Efficient session and user state management
 - **Error handling**: Graceful degradation on API failures
+
+---
 
 ## 🤝 Contributing
 
@@ -298,6 +365,7 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Submit a pull request
 
+---
 
 ## 🆘 Support
 
@@ -306,17 +374,19 @@ Contributions are welcome! Please:
 - **Documentation**: Check README and config files
 - **Groq Docs**: https://console.groq.com/docs
 
+---
+
 ## 🔮 Future Enhancements
 
 Potential features for future versions:
-- ✨ Database storage for persistent chat history
-- ✨ User authentication and profiles
-- ✨ Export to PDF/DOCX
+- ✨ Export chats to PDF/DOCX
 - ✨ Team collaboration features
 - ✨ Analytics dashboard
 - ✨ Integration with more AI providers
 - ✨ Advanced RAG capabilities
 - ✨ Voice input/output support
+
+---
 
 ## 📞 Contact
 
@@ -326,6 +396,6 @@ For questions or suggestions:
 
 ---
 
-**articulAIte** - Empower Your Love for learningwith AI 🚀
+**articulAIte** - Empower Your Love for Learning with AI 🚀
 
 Made with ❤️ using Streamlit, LangChain, and Groq
