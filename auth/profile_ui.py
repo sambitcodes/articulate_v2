@@ -1,5 +1,6 @@
 import streamlit as st
 from auth.database import get_connection, get_user_by_id
+from auth.session_manager import logout_persist
 import os
 
 PROFILE_IMG_FOLDER = "profile_images"
@@ -8,8 +9,8 @@ def update_user_profile(user_id, full_name, email, phone, pic_url):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE users SET full_name=?, email=?, phone_number=?, profile_pic=?
-        WHERE id=?
+        UPDATE users SET full_name=%s, email=%s, phone_number=%s, profile_pic=%s
+        WHERE id=%s
     """, (full_name, email, phone, pic_url, user_id))
     conn.commit()
     conn.close()
@@ -52,9 +53,11 @@ def show_profile_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Logout", type="primary"):
+        logout_persist()
         st.session_state.logged_in = False
         st.session_state.user = None
         st.session_state.profile_mode = False
+        time.sleep(0.5)
         st.rerun()
 
     if st.button("⬅️ Back to Home", key="back_to_home"):

@@ -8,3 +8,5 @@ requests
 PyPDF2
 python-docx
 markdown
+extra-streamlit-components
+psycopg2-binary

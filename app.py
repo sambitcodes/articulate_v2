@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from auth.database import init_database
 from auth.auth_ui import show_auth_page
+from auth.session_manager import check_auth_status, logout_persist
 # Import tab modules
 from tabs.cv_interview import cv_interview_tab
 from tabs.code_explainer import code_explainer_tab
@@ -27,6 +28,7 @@ st.set_page_config(
 )
 
 init_database()
+check_auth_status()
 
 # Custom CSS
 st.markdown("""
@@ -105,9 +107,11 @@ def main():
         bl_col, btn_col = st.columns([1,1])
         with btn_col:
             if st.button("🚪 Logout", use_container_width=True):
+                logout_persist()
                 st.session_state.logged_in = False
                 st.session_state.user = None
                 st.session_state.profile_mode = False
+                st.sleep(0.5)
                 st.rerun()
 
     # Header

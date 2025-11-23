@@ -3,7 +3,9 @@ Login and Registration UI components
 """
 
 import streamlit as st
+import time
 from auth.database import register_user, login_user
+from auth.session_manager import login_persist
 
 def show_auth_page():
     """Display login/register page"""
@@ -66,7 +68,10 @@ def show_login_form():
                 if success:
                     st.session_state.logged_in = True
                     st.session_state.user = user_data
+
+                    login_persist(user_data["id"])
                     st.success(f"Welcome back, {user_data['full_name']}! 🎉")
+                    time.sleep(1.5)
                     st.rerun()
                 else:
                     st.error("❌ Invalid credentials. Please try again.")
@@ -123,5 +128,7 @@ def show_register_form():
                 if success:
                     st.success("✅ " + message + " Please login now.")
                     st.balloons()
+                    time.sleep(1.5)
+                    st.rerun()
                 else:
                     st.error("❌ " + message)

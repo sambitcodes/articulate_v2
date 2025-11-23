@@ -5,8 +5,11 @@ Article Generator Tab
 import streamlit as st
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from utils.chat_history import initialize_chat_history, add_message, display_chat_history, format_chat_history_for_llm
+from utils.file_handler import validate_file, extract_text_from_file
+from utils.chat_history import initialize_chat_history, add_message, display_chat_history, get_chat_history, format_chat_history_for_llm
 from utils.memory import save_chat_message, get_chat_history
+from utils.chat_sessions import create_chat_session, get_user_sessions, get_session_messages, update_session_title_if_new
+from components.chat_library import show_chat_library
 from config import ARTICLE_GENERATOR_MODELS, SYSTEM_PROMPTS, WRITING_STYLES, ARTICLE_MAX_WORDS, ARTICLE_MIN_WORDS, ARTICLE_DEFAULT_WORDS
 import os
 
@@ -15,8 +18,36 @@ def article_generator_tab():
 
     user_id = st.session_state.user["id"]
     tab_name = "Article Generator"
+    tab_key = "article_generator"
+
+    session_id_key = f"session_id_{tab_key}"
+    messages_key = f"messages_{tab_key}"
     
-    st.markdown("""
+    if session_id_key not in st.session_state:
+        # Check DB for recent session
+        sessions = get_user_sessions(user_id, tab_name, limit=1)
+        if sessions:
+            # Resume latest
+            latest_session = sessions[0]
+            st.session_state[session_id_key] = latest_session[0]
+            db_msgs = get_session_messages(latest_session[0])
+            st.session_state[messages_key] = [{"role": r, "content": c} for r, c, _ in db_msgs]
+        else:
+            # Create fresh
+            new_id = create_chat_session(user_id, tab_name)
+            st.session_state[session_id_key] = new_id
+            st.session_state[messages_key] = []
+            
+    # Ensure messages list exists
+    if messages_key not in st.session_state:
+        st.session_state[messages_key] = []
+
+    
+    main_col, lib_col = st.columns([4, 1])
+    show_chat_library(user_id, tab_name, tab_key, lib_col)
+
+    with main_col:
+        st.markdown("""
     <h4 style='text-align: left; color: #33FF33;'>
     📜✒️ Taarak Mehta here!
     </h4>
@@ -24,20 +55,12 @@ def article_generator_tab():
     unsafe_allow_html=True)
 
 
-    st.markdown("""
+        st.markdown("""
     <p style='text-align: left; color: #FF66B2;'>
        Create well-researched articles with customizable settings for style
     </p>
     """, 
     unsafe_allow_html=True)
-    
-    # Initialize session state
-    tab_key = "article_generator"
-    initialize_chat_history(tab_key)
-    
-    # Sidebar Configuration
-    func_col, chat_col = st.columns([4,1])
-    with func_col:
     # Article Configuration
         with st.container(border=True):
             topic_col, select_col, slider_col = st.columns([2,1,1])
@@ -163,6 +186,10 @@ def article_generator_tab():
         )
         
         if user_input:
+            session_id = st.session_state.current_session_id
+            current_sess_id = st.session_state[session_id_key]
+            update_session_title_if_new(current_sess_id, user_input)
+            st.session_state[messages_key].append({"role": "user", "content": user_input})
             add_message(tab_key, "user", user_input)
             save_chat_message(user_id, tab_name, "user", user_input)
             
@@ -188,15 +215,10 @@ def article_generator_tab():
                     assistant_response = response.content
                     
                     add_message(tab_key, "assistant", assistant_response)
+                    st.session_state[messages_key].append({"role": "assistant", "content": assistant_response})
                     save_chat_message(user_id, tab_name, "assistant", assistant_response)
                     st.rerun()
                     
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
 
-    with chat_col:
-        if st.button("📜 View Chat History", key = "article_chat_history"):
-            history = get_chat_history(user_id, tab_name)
-            for role, content, timestamp in history:
-                st.markdown(f"**{role}:** {content[:100]}...")
-                st.markdown(f"*Timestamp: {timestamp}*")

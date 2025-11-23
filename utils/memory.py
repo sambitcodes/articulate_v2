@@ -3,14 +3,14 @@ Chat history storage and retrieval for authenticated users
 """
 
 from auth.database import get_connection
-from utils.chat_sessions import update_session_timestamp
+# from utils.chat_sessions import update_session_timestamp
 
 def save_chat_message(user_id, session_id, tab_name, role, content):
     """Save a single chat message to database with session_id"""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO chat_history (user_id, session_id, tab_name, role, content) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO chat_history (user_id, session_id, tab_name, role, content) VALUES (%s, %s, %s, %s, %s)",      
         (user_id, session_id, tab_name, role, content)
     )
     conn.commit()
@@ -26,12 +26,12 @@ def get_chat_history(user_id, tab_name=None, limit=50):
     
     if tab_name:
         cursor.execute(
-            "SELECT role, content, timestamp FROM chat_history WHERE user_id=? AND tab_name=? ORDER BY timestamp DESC LIMIT ?",
+            "SELECT role, content, timestamp FROM chat_history WHERE user_id=%s AND tab_name=%s ORDER BY timestamp DESC LIMIT %s",
             (user_id, tab_name, limit)
         )
     else:
         cursor.execute(
-            "SELECT tab_name, role, content, timestamp FROM chat_history WHERE user_id=? ORDER BY timestamp DESC LIMIT ?",
+            "SELECT tab_name, role, content, timestamp FROM chat_history WHERE user_id=%s ORDER BY timestamp DESC LIMIT %s",
             (user_id, limit)
         )
     
@@ -46,7 +46,7 @@ def get_all_sessions(user_id):
     cursor.execute(
         """SELECT DISTINCT tab_name, DATE(timestamp) as chat_date, COUNT(*) as message_count
         FROM chat_history 
-        WHERE user_id=? 
+        WHERE user_id=%s    
         GROUP BY tab_name, chat_date 
         ORDER BY timestamp DESC""",
         (user_id,)
@@ -61,9 +61,9 @@ def delete_chat_history(user_id, tab_name=None):
     cursor = conn.cursor()
     
     if tab_name:
-        cursor.execute("DELETE FROM chat_history WHERE user_id=? AND tab_name=?", (user_id, tab_name))
+        cursor.execute("DELETE FROM chat_history WHERE user_id=%s AND tab_name=%s", (user_id, tab_name))
     else:
-        cursor.execute("DELETE FROM chat_history WHERE user_id=?", (user_id,))
+        cursor.execute("DELETE FROM chat_history WHERE user_id=%s", (user_id,))
     
     conn.commit()
     conn.close()
