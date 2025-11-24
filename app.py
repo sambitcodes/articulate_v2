@@ -6,6 +6,7 @@ AI-Powered Career Development Assistant using LangChain and Groq
 import streamlit as st
 import os
 from dotenv import load_dotenv
+import time
 
 # Load environment variables
 load_dotenv()
