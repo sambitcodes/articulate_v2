@@ -9,14 +9,32 @@ from auth.session_manager import login_persist
 
 def show_auth_page():
     """Display login/register page"""
-    st.markdown("""
-    <div style='text-align: center; padding: 40px 0 20px 0;'>
-        <h1>👋 Welcome to articulAIte!</h1>
-        <p style='font-size: 1.1em; color: #666;'>
-            Your AI-powered career development assistant
+    # st.markdown("""
+    # <div style='text-align: center; padding: 40px 0 20px 0;'>
+    #     <h1>👋 Welcome to articulAIte!</h1>
+    #     <p style='font-size: 1.1em; color: #666;'>
+    #         Your AI-powered career development assistant
+    #     </p>
+    # </div>
+    # """, unsafe_allow_html=True)
+
+    st.markdown(
+    """
+    <h1 style='text-align: center; color: white;'>
+    <span style='color: #4169E1;'>Welcome to</span>  🎯 articul<span style='color: #FF9933;'>AI</span>te 🤖 
+    </h1>
+    """, 
+    unsafe_allow_html=True
+)
+
+    st.markdown(
+        """
+        <p style='text-align: center; color: #666;'>
+        Interviewer 👔 | Coder 👨‍💻| Writer ✒️| Planner 🗓️ - Powered by <span style='color: #4169E1;'>AI</span> 
         </p>
-    </div>
-    """, unsafe_allow_html=True)
+        """, 
+        unsafe_allow_html=True
+    )
     
     st.markdown("---")
     

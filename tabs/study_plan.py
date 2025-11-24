@@ -67,7 +67,7 @@ def study_plan_tab():
             else:
                 with st.spinner("Creating plan..."):
                     try:
-
+                        
                         new_sess_id = create_chat_session(user_id, tab_name, first_message=f"Plan: {subject}")
                         st.session_state[session_id_key] = new_sess_id
                         st.session_state[messages_key] = []
@@ -174,6 +174,6 @@ Return ONLY the formatted study plan with no extra commentary.
                         st.write(response)
                     
                     save_chat_message(user_id, current_sess_id, tab_name, "assistant", response)
-                    
+
                 except Exception as e:
                     st.error(str(e))
