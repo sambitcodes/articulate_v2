@@ -89,16 +89,17 @@ def show_login_form():
 
                     login_persist(user_data["id"])
                     st.success(f"Welcome back, {user_data['full_name']}! 🎉")
-                    time.sleep(0.5)
+                    # time.sleep(0.5)
                     st.rerun()
                 else:
                     st.error("❌ Invalid credentials. Please try again.")
 
 def show_register_form():
     """Display registration form"""
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1.5, 2, 1.5])
     
     with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("### 📝 Create New Account")
         
         full_name = st.text_input(
@@ -146,7 +147,7 @@ def show_register_form():
                 if success:
                     st.success("✅ " + message + " Please login now.")
                     st.balloons()
-                    time.sleep(1.5)
+                    # time.sleep(0.5)
                     st.rerun()
                 else:
                     st.error("❌ " + message)
