@@ -169,7 +169,7 @@ Return ONLY the formatted study plan with no extra commentary.
                         study_plan = response.content
                         
                         st.session_state['generated_study_plan'] = study_plan
-                        st.session_state['study_subject'] = subject
+                        # st.session_state['study_subject'] = subject
                         
                         add_message(tab_key, "assistant", f"**Study Plan for {subject}**\n\n{study_plan}")
                         
