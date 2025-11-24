@@ -36,11 +36,11 @@ def show_auth_page():
         unsafe_allow_html=True
     )
     
-    st.markdown("---")
     
     # Mode selection
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1.5, 2, 1.5])
     with col2:
+        st.markdown("---")
         auth_mode = st.radio(
             "Select mode:",
             ["Login", "Register"],
@@ -48,8 +48,7 @@ def show_auth_page():
             label_visibility="collapsed"
         )
     
-    
-    
+     
     if auth_mode == "Login":
         show_login_form()
     else:
