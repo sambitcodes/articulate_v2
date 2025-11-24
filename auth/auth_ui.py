@@ -48,7 +48,7 @@ def show_auth_page():
             label_visibility="collapsed"
         )
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    
     
     if auth_mode == "Login":
         show_login_form()
@@ -57,9 +57,10 @@ def show_auth_page():
 
 def show_login_form():
     """Display login form"""
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1.5, 2, 1.5])
     
     with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("### 🔐 Login to Your Account")
         
         username_or_email = st.text_input(
