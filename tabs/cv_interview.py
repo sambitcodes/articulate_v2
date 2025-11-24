@@ -97,6 +97,9 @@ def cv_interview_tab():
                     st.session_state[messages_key].append({"role": "assistant", "content": full_response})
                     save_chat_message(user_id, new_sess_id, tab_name, "assistant", full_response)
                     
+                    if f"cached_sessions_list_{tab_key}" in st.session_state:
+                        del st.session_state[f"cached_sessions_list_{tab_key}"]
+                    
                     st.success("Done!")
                     st.rerun()
                     

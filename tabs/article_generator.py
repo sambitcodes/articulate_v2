@@ -149,6 +149,8 @@ Now, write the full article.:"""
                         
                         # Save to Database using the NEW ID
                         save_chat_message(user_id, new_sess_id, tab_name, "assistant", msg)
+                        if f"cached_sessions_list_{tab_key}" in st.session_state:
+                            del st.session_state[f"cached_sessions_list_{tab_key}"]
                         
                         st.success("Generated!")
                         # Rerun to refresh the Chat Library list on the right immediately

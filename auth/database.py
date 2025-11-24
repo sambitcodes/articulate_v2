@@ -10,7 +10,12 @@ from datetime import datetime
 
 def get_connection():
     """Get database connection from Secrets or Environment"""
-    db_url = os.getenv("DATABASE_URL") or st.secrets.get("DATABASE_URL")
+    # Tries to get URL from Streamlit secrets first, then environment variables
+    if "DATABASE_URL" in st.secrets:
+        db_url = st.secrets["DATABASE_URL"]
+    else:
+        db_url = os.getenv("DATABASE_URL")
+        
     if not db_url:
         raise ValueError("DATABASE_URL not found in secrets or environment variables.")
     
@@ -117,21 +122,26 @@ def login_user(username_or_email, password):
         }
     return False, None
 
+# CACHED FUNCTION: This drastically reduces DB hits for session checks
+@st.cache_data(ttl=3600)
 def get_user_by_id(user_id):
-    """Get user details by ID"""
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, full_name, username, email, phone_number, profile_pic FROM users WHERE id=%s", (user_id,))
-    user = cursor.fetchone()
-    conn.close()
-    
-    if user:
-        return {
-            "id": user[0],
-            "full_name": user[1],
-            "username": user[2],
-            "email": user[3],
-            "phone_number": user[4],
-            "profile_pic": user[5]
-        }
-    return None
+    """Get user details by ID (Cached)"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, full_name, username, email, phone_number, profile_pic FROM users WHERE id=%s", (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
+            return {
+                "id": user[0],
+                "full_name": user[1],
+                "username": user[2],
+                "email": user[3],
+                "phone_number": user[4],
+                "profile_pic": user[5]
+            }
+        return None
+    except:
+        return None

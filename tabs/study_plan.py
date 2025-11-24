@@ -172,6 +172,10 @@ Return ONLY the formatted study plan with no extra commentary.
                         st.session_state['study_subject'] = subject
                         
                         add_message(tab_key, "assistant", f"**Study Plan for {subject}**\n\n{study_plan}")
+                        
+                        if f"cached_sessions_list_{tab_key}" in st.session_state:
+                            del st.session_state[f"cached_sessions_list_{tab_key}"]
+                        
                         st.success("Plan created!")
                         
                     except Exception as e:

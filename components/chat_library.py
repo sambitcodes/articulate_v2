@@ -1,5 +1,6 @@
 """
 Chat Library UI Component - Right Column Integration
+Optimized with Session State Caching to prevent slow DB reloads
 """
 
 import streamlit as st
@@ -15,6 +16,7 @@ from datetime import datetime
 def show_chat_library(user_id, tab_name, tab_key, container):
     """
     Unified chat history list for the right column.
+    Uses session state caching to avoid DB latency on every rerun.
     """
     with container:
         st.markdown(f"### 🗄️ Library")
@@ -23,6 +25,15 @@ def show_chat_library(user_id, tab_name, tab_key, container):
         # Keys
         session_id_key = f"session_id_{tab_key}"
         messages_key = f"messages_{tab_key}"
+        
+        # Cache Key: We store the list of sessions in session_state to avoid 
+        # hitting the Supabase DB on every single interaction (dropdown change, typing, etc.)
+        cache_key = f"cached_sessions_list_{tab_key}"
+
+        # Function to force-refresh the cache (e.g., after delete/create)
+        def refresh_cache():
+            if cache_key in st.session_state:
+                del st.session_state[cache_key]
 
         # New Chat Button
         unique_suffix = str(uuid.uuid4())[:8]
@@ -32,10 +43,19 @@ def show_chat_library(user_id, tab_name, tab_key, container):
             # Update State
             st.session_state[session_id_key] = new_id
             st.session_state[messages_key] = []
+            
+            # Invalidate cache so the new chat appears in the list next time
+            refresh_cache()
             st.rerun()
 
-        # Get sessions
-        sessions = get_user_sessions(user_id, tab_name=tab_name, limit=10)
+        # --- CACHING LOGIC START ---
+        # Only fetch from DB if we don't have it in memory
+        if cache_key not in st.session_state:
+            with st.spinner("Loading history..."):
+                st.session_state[cache_key] = get_user_sessions(user_id, tab_name=tab_name, limit=10)
+        
+        sessions = st.session_state[cache_key]
+        # --- CACHING LOGIC END ---
 
         if not sessions:
             st.info("No saved chats.")
@@ -59,7 +79,9 @@ def show_chat_library(user_id, tab_name, tab_key, container):
             c1, c2 = st.columns([4, 1])
             with c1:
                 # Load Button
-                if st.button(f"💬 {title}", key=f"load_{tab_key}_{sess_id}", help=str(updated_at), use_container_width=True, type=button_style):
+                # Truncate title for UI
+                display_title = title if len(title) < 25 else title[:25] + "..."
+                if st.button(f"💬 {display_title}", key=f"load_{tab_key}_{sess_id}", help=f"{title} ({updated_at})", use_container_width=True, type=button_style):
                     load_session(sess_id, tab_key)
             
             with c2:
@@ -71,6 +93,9 @@ def show_chat_library(user_id, tab_name, tab_key, container):
                         new_id = create_chat_session(user_id, tab_name)
                         st.session_state[session_id_key] = new_id
                         st.session_state[messages_key] = []
+                    
+                    # Force refresh of the list
+                    refresh_cache()
                     st.rerun()
 
 def load_session(session_id, tab_key):

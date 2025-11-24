@@ -85,6 +85,9 @@ def code_explainer_tab():
                     st.session_state[messages_key].append({"role": "assistant", "content": full_msg})
                     save_chat_message(user_id, new_sess_id, tab_name, "assistant", full_msg)
                     
+                    if f"cached_sessions_list_{tab_key}" in st.session_state:
+                        del st.session_state[f"cached_sessions_list_{tab_key}"]
+                    
                     st.success("Done!")
                     st.rerun()
                 except Exception as e:
