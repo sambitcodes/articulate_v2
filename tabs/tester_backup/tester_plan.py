@@ -112,58 +112,24 @@ def study_plan_tab():
                             groq_api_key=os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
                         )
                         
-                        prompt_text = f"""
-ROLE: You are an expert curriculum designer and learning strategist. Your task is to create a precise, research-backed study plan based strictly on the given inputs. Do NOT add topics, skills, or timelines not supported by the inputs. If a detail is unclear or unspecified, state it neutrally rather than guessing.
+                        prompt_text = f"""Create comprehensive study plan:
 
-INPUTS:
-- Subject: {subject}
-- Duration: {duration_weeks} weeks
-- Current Knowledge Level: {knowledge_level}
-- Learning Goal: {learning_goal}
-- Daily Study Time: {daily_hours} hours/day
-- Preferred Learning Methods: {', '.join(learning_style)}
+    Subject: {subject}
+    Duration: {duration_weeks} weeks
+    Level: {knowledge_level}
+    Goal: {learning_goal}
+    Daily Hours: {daily_hours} hours
+    Methods: {', '.join(learning_style)}
 
-OUTPUT STRUCTURE (follow exactly):
+    Include:
+    1. Overview of what will be covered
+    2. Learning objectives
+    3. Week-by-week schedule with topics
+    4. Recommended resources
+    5. Progress tracking metrics
+    6. Success tips
 
-1. **Program Overview**
-   - 4–7 sentence summary describing: scope of learning, alignment with input goal, expected difficulty, and learning strategy approach.
-
-2. **Learning Objectives**
-   - 6–10 clear, measurable, outcome-focused objectives using high-clarity verbs (e.g., analyze, apply, evaluate, implement, demonstrate).
-
-3. **Week-by-Week Roadmap**
-   - For each week:
-       - Week number
-       - Primary theme or milestone
-       - Specific subtopics or modules
-       - Expected outcome/end-of-week competency
-       - Daily structure example based on provided daily hours and learning methods
-
-   Requirements:
-   - Timeline MUST stay aligned with the exact number of weeks and must not shift or condense content.
-   - Maintain realistic pacing based on the learner’s level and hours/day.
-
-4. **Recommended Resources**
-   - Organize by type: Books/Textbooks, Videos/Courses, Tools/Software, Practice Platforms.
-   - Only recommend widely available, reputable sources (avoid obscure or unverifiable ones).
-   - If a resource may require payment, label it as: (Paid).
-
-5. **Progress and Performance Metrics**
-   - Define measurable checkpoints, reflection prompts, assignments, or benchmarks for each phase of the plan.
-   - Include frequency of assessment (ex: weekly quiz, monthly project, spaced recall checkpoints).
-
-6. **Success and Retention Strategies**
-   - Provide actionable study techniques aligned to the learner’s stated methods.
-   - Include motivation, time management, revision cycles, spaced repetition, and consistency guidelines.
-
-CONSTRAINTS:
-- Do NOT hallucinate niche tools, fake books, or fictional methodologies.
-- Keep tone structured, professional, timeline-focused and easy for a learner to follow.
-- Ensure clarity of format, proper headings, clean spacing, and logically sequenced instructional design.
-
-Return ONLY the formatted study plan with no extra commentary.
-"""
-
+    Format clearly with proper headings."""
                         
                         response = llm.invoke(prompt_text)
                         study_plan = response.content
