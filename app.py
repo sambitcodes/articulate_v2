@@ -111,7 +111,7 @@ def main():
                 st.session_state.logged_in = False
                 st.session_state.user = None
                 st.session_state.profile_mode = False
-                st.sleep(0.5)
+                time.sleep(0.5)
                 st.rerun()
 
     # Header
