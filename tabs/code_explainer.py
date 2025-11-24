@@ -37,7 +37,6 @@ def code_explainer_tab():
     if messages_key not in st.session_state:
         st.session_state[messages_key] = []
 
-    # --- Layout ---
     main_col, lib_col = st.columns([4, 1])
     show_chat_library(user_id, tab_name, tab_key, lib_col)
       
@@ -68,28 +67,25 @@ def code_explainer_tab():
             
             with st.spinner("Analyzing..."):
                 try:
-                    # 1. Create New Session
+                    
                     code_snippet = st.session_state['current_code'][:30].replace("\n", " ")
                     new_sess_id = create_chat_session(user_id, tab_name, first_message=f"{session_prefix}: {code_snippet}")
-                    
-                    # 2. Reset State
                     st.session_state[session_id_key] = new_sess_id
                     st.session_state[messages_key] = []
                     
-                    # 3. Generate
                     llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY"))
                     response = llm.invoke(prompt_text).content
                     
-                    # 4. Save
                     full_msg = f"**{output_header}**\n\n{response}"
                     st.session_state[messages_key].append({"role": "assistant", "content": full_msg})
                     save_chat_message(user_id, new_sess_id, tab_name, "assistant", full_msg)
-                    
+
                     if f"cached_sessions_list_{tab_key}" in st.session_state:
                         del st.session_state[f"cached_sessions_list_{tab_key}"]
                     
                     st.success("Done!")
                     st.rerun()
+
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
 
@@ -200,12 +196,14 @@ def code_explainer_tab():
                 st.write(msg["content"])
                 
         if user_input := st.chat_input("Ask about code...", key="code_chat_input"):
+
             current_sess_id = st.session_state[session_id_key]
             update_session_title_if_new(current_sess_id, user_input)
-            
             st.session_state[messages_key].append({"role": "user", "content": user_input})
+
             with st.chat_message("user"):
                 st.write(user_input)
+
             save_chat_message(user_id, current_sess_id, tab_name, "user", user_input)
             
             with st.spinner("Expert is analyzing..."):
@@ -213,9 +211,8 @@ def code_explainer_tab():
                     llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY"))
                     context = f"{SYSTEM_PROMPTS['code_explainer']}\nCurrent code:\n```\n{st.session_state.get('current_code', 'Not provided')}\n```"
                     
-                    hist = [(m["role"], m["content"]) for m in st.session_state[messages_key][-10:]]
-                    prompt = ChatPromptTemplate.from_messages([("system", context), *hist])
-                    
+                    chat_history_llm = [(m["role"], m["content"]) for m in st.session_state[messages_key][-10:]]
+                    prompt = ChatPromptTemplate.from_messages([("system", context), *chat_history_llm])
                     response = llm.invoke(prompt.format_prompt().to_messages()).content
                     
                     st.session_state[messages_key].append({"role": "assistant", "content": response})
@@ -223,5 +220,6 @@ def code_explainer_tab():
                         st.write(response)
                     
                     save_chat_message(user_id, current_sess_id, tab_name, "assistant", response)
+
                 except Exception as e:
-                    st.error(str(e))
+                    st.error(f"Error: {str(e)}")

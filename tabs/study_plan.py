@@ -37,7 +37,7 @@ def study_plan_tab():
     if messages_key not in st.session_state:
         st.session_state[messages_key] = []
     
-    # --- Layout ---
+
     main_col, lib_col = st.columns([4, 1])
     show_chat_library(user_id, tab_name, tab_key, lib_col)
 
@@ -67,15 +67,11 @@ def study_plan_tab():
             else:
                 with st.spinner("Creating plan..."):
                     try:
-                        # 1. Create Session
+
                         new_sess_id = create_chat_session(user_id, tab_name, first_message=f"Plan: {subject}")
-                        
-                        # 2. Reset State
                         st.session_state[session_id_key] = new_sess_id
                         st.session_state[messages_key] = []
-                        
-                        # 3. Generate
-                        llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY"))
+
                         prompt = f"""
 ROLE: You are an expert curriculum designer and learning strategist. Your task is to create a precise, research-backed study plan based strictly on the given inputs. Do NOT add topics, skills, or timelines not supported by the inputs. If a detail is unclear or unspecified, state it neutrally rather than guessing.
 
@@ -127,17 +123,21 @@ CONSTRAINTS:
 
 Return ONLY the formatted study plan with no extra commentary.
 """
-
-                        response = llm.invoke(prompt).content
-                        st.session_state['generated_study_plan'] = response
                         
-                        # 4. Save
+                        llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY"))
+                        response = llm.invoke(prompt).content
+                        # st.session_state['generated_study_plan'] = response
+                        
                         msg = f"**Study Plan for {subject}**\n\n{response}"
                         st.session_state[messages_key].append({"role": "assistant", "content": msg})
                         save_chat_message(user_id, new_sess_id, tab_name, "assistant", msg)
+
+                        if f"cached_sessions_list_{tab_key}" in st.session_state:
+                            del st.session_state[f"cached_sessions_list_{tab_key}"]
                         
                         st.success("Created!")
                         st.rerun()
+
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
         
@@ -150,12 +150,14 @@ Return ONLY the formatted study plan with no extra commentary.
                 st.write(msg["content"])
         
         if user_input := st.chat_input("Ask mentor...", key="study_chat_input"):
+
             current_sess_id = st.session_state[session_id_key]
             update_session_title_if_new(current_sess_id, user_input)
-            
             st.session_state[messages_key].append({"role": "user", "content": user_input})
+
             with st.chat_message("user"):
                 st.write(user_input)
+
             save_chat_message(user_id, current_sess_id, tab_name, "user", user_input)
             
             with st.spinner("Thinking..."):
@@ -165,7 +167,6 @@ Return ONLY the formatted study plan with no extra commentary.
                     
                     hist = [(m["role"], m["content"]) for m in st.session_state[messages_key][-10:]]
                     prompt = ChatPromptTemplate.from_messages([("system", context), *hist])
-                    
                     response = llm.invoke(prompt.format_prompt().to_messages()).content
                     
                     st.session_state[messages_key].append({"role": "assistant", "content": response})
@@ -173,5 +174,6 @@ Return ONLY the formatted study plan with no extra commentary.
                         st.write(response)
                     
                     save_chat_message(user_id, current_sess_id, tab_name, "assistant", response)
+                    
                 except Exception as e:
                     st.error(str(e))

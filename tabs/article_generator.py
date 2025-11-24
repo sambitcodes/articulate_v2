@@ -22,7 +22,6 @@ def article_generator_tab():
     session_id_key = f"session_id_{tab_key}"
     messages_key = f"messages_{tab_key}"
     
-    # --- Initialization Logic ---
     # This loads the last session ONLY if we don't have one active.
     if session_id_key not in st.session_state:
         sessions = get_user_sessions(user_id, tab_name, limit=1)
@@ -39,10 +38,7 @@ def article_generator_tab():
     if messages_key not in st.session_state:
         st.session_state[messages_key] = []
 
-    # --- UI Layout ---
     main_col, lib_col = st.columns([4, 1])
-    
-    # 1. Show the Chat Library (Sidebar history)
     show_chat_library(user_id, tab_name, tab_key, lib_col)
 
     with main_col:
@@ -77,21 +73,12 @@ def article_generator_tab():
             else:
                 with st.spinner("Generating article..."):
                     try:
-                        # 1. FORCE NEW SESSION [FIX]
-                        # Instead of using the old session, we create a fresh one immediately.
-                        # We use the topic as the "first message" implicitly for the title.
+                        
                         new_sess_id = create_chat_session(user_id, tab_name, first_message=f"Article: {article_topic}")
-                        
-                        # 2. UPDATE STATE [FIX]
-                        # Point the app to this new session ID
                         st.session_state[session_id_key] = new_sess_id
-                        
-                        # 3. CLEAR HISTORY [FIX]
-                        # Wipe the UI chat messages clean
                         st.session_state[messages_key] = []
                         
                         # Generate content
-                        llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY"))
                         prompt_text = f"""You are an expert researcher and professional writer.
 
 Your task is to generate a high-quality, publication-ready article with the following specifications:
@@ -136,26 +123,22 @@ Creativity Level: **{temperature}** (0 = factual/technical, 1 = highly creative)
 
 ----
 
-Now, write the full article.:"""       
+Now, write the full article.:"""   
+
+                        llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY"))  
                         response = llm.invoke(prompt_text).content
-                        st.session_state['generated_article'] = response
+                        # st.session_state['generated_article'] = response
                         
-                        # 4. SAVE TO NEW SESSION [FIX]
-                        # Save this generated article as the *first* message in the NEW history
                         msg = f"**Generated Article for: {article_topic}**\n\n{response}"
-                        
-                        # Update UI state with just this one message
                         st.session_state[messages_key].append({"role": "assistant", "content": msg})
-                        
-                        # Save to Database using the NEW ID
                         save_chat_message(user_id, new_sess_id, tab_name, "assistant", msg)
+                        
                         if f"cached_sessions_list_{tab_key}" in st.session_state:
                             del st.session_state[f"cached_sessions_list_{tab_key}"]
                         
                         st.success("Generated!")
-                        # Rerun to refresh the Chat Library list on the right immediately
                         st.rerun()
-                        
+
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
         
@@ -172,18 +155,16 @@ Now, write the full article.:"""
         st.markdown("""<h4 style='text-align: left; color: #33FF33;'>✍🏻 Chat with Editor</h4>""", unsafe_allow_html=True)
         
         # Display History (Now isolated to the specific session)
-        # for msg in st.session_state[messages_key]:
-            # with st.chat_message(msg["role"]):
-            #     st.write(msg["content"])
+        for msg in st.session_state[messages_key]:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
         
-        user_input = st.chat_input("Ask about article...", key="article_chat_input")
-        
-        if user_input:
+        if user_input := st.chat_input("Ask about article...", key="article_chat_input"):
+
             current_sess_id = st.session_state[session_id_key]
-            
-            # Standard chat loop
             update_session_title_if_new(current_sess_id, user_input)
             st.session_state[messages_key].append({"role": "user", "content": user_input})
+
             with st.chat_message("user"):
                 st.write(user_input)
             
@@ -194,7 +175,7 @@ Now, write the full article.:"""
                     llm = ChatGroq(model=selected_model, temperature=temperature, groq_api_key=os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY"))
                     context = f"{SYSTEM_PROMPTS['article_generator']}\nArticle being edited:\n{st.session_state.get('generated_article', 'Not yet generated')}"
                     
-                    chat_history_llm = [(m["role"], m["content"]) for m in st.session_state[messages_key]]
+                    chat_history_llm = [(m["role"], m["content"]) for m in st.session_state[messages_key][-10:]]
                     prompt = ChatPromptTemplate.from_messages([("system", context), *chat_history_llm])
                     response = llm.invoke(prompt.format_prompt().to_messages()).content
                     
@@ -203,7 +184,6 @@ Now, write the full article.:"""
                         st.write(response)
                     
                     save_chat_message(user_id, current_sess_id, tab_name, "assistant", response)
-                    # No rerun needed here usually, but if you want to be safe:
-                    # st.rerun()
+
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
