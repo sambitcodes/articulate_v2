@@ -20,7 +20,7 @@ def cv_interview_tab():
     tab_name = "CV Interview"
     tab_key = "cv_interview"
 
-    session_id_key = f"sessions_id_{tab_key}"
+    session_id_key = f"session_id_{tab_key}"
     messages_key = f"messages_{tab_key}"
 
     if session_id_key not in st.session_state:
@@ -190,7 +190,7 @@ def cv_interview_tab():
             update_session_title_if_new(current_sess_id, user_input)
             st.session_state[messages_key].append({"role": "user", "content": user_input})
             add_message(tab_key, "user", user_input)
-            save_chat_message(user_id, session_id, tab_name, "user", user_input)
+            save_chat_message(user_id, current_sess_id, tab_name, "user", user_input)
             
             with st.spinner("Coach is thinking..."):
                 try:
@@ -217,7 +217,7 @@ def cv_interview_tab():
                     
                     add_message(tab_key, "assistant", assistant_response)
                     st.session_state[messages_key].append({"role": "assistant", "content": assistant_response})
-                    save_chat_message(user_id, session_id, tab_name, "assistant", assistant_response)
+                    save_chat_message(user_id, current_sess_id, tab_name, "assistant", assistant_response)
                     st.rerun()
                     
                 except Exception as e:

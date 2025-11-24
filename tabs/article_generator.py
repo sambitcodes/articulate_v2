@@ -191,7 +191,7 @@ def article_generator_tab():
             update_session_title_if_new(current_sess_id, user_input)
             st.session_state[messages_key].append({"role": "user", "content": user_input})
             add_message(tab_key, "user", user_input)
-            save_chat_message(user_id, tab_name, "user", user_input)
+            save_chat_message(user_id, current_sess_id, tab_name, "user", user_input)
             
             with st.spinner("Editor is working..."):
                 try:
@@ -216,7 +216,7 @@ def article_generator_tab():
                     
                     add_message(tab_key, "assistant", assistant_response)
                     st.session_state[messages_key].append({"role": "assistant", "content": assistant_response})
-                    save_chat_message(user_id, tab_name, "assistant", assistant_response)
+                    save_chat_message(user_id, current_sess_id, tab_name, "assistant", assistant_response)
                     st.rerun()
                     
                 except Exception as e:
