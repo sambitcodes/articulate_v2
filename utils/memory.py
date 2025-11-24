@@ -3,7 +3,7 @@ Chat history storage and retrieval for authenticated users
 """
 
 from auth.database import get_connection
-# from utils.chat_sessions import update_session_timestamp
+from utils.chat_sessions import update_session_timestamp
 
 def save_chat_message(user_id, session_id, tab_name, role, content):
     """Save a single chat message to database with session_id"""
