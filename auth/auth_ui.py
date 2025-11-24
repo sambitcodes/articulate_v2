@@ -71,7 +71,7 @@ def show_login_form():
 
                     login_persist(user_data["id"])
                     st.success(f"Welcome back, {user_data['full_name']}! 🎉")
-                    time.sleep(1.5)
+                    time.sleep(0.5)
                     st.rerun()
                 else:
                     st.error("❌ Invalid credentials. Please try again.")
